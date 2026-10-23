@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OP-003 · Lista de verificación de cocina</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--tx:#1d1d1b;--mut:#6b6a66;--bd:#dcdad4;--ac:#8a2a1c;--ok:#1f7a45;--no:#b3261e;--okb:#e3f4ea;--nob:#fbe6e4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--card:#232321;--tx:#f1efea;--mut:#a3a19a;--bd:#3a3935;--ac:#e0705c;--ok:#5fcf8c;--no:#ff8a80;--okb:#16301f;--nob:#3a1e1c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171716;--card:#232321;--tx:#f1efea;--mut:#a3a19a;--bd:#3a3935;--ac:#e0705c;--ok:#5fcf8c;--no:#ff8a80;--okb:#16301f;--nob:#3a1e1c;color-scheme:dark}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 56px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:10}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--card);border-bottom:1px solid var(--bd);padding:8px 14px}
+.bar div{max-width:760px;margin:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
+.pg{flex:1;height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.pg i{display:block;height:100%;width:0;background:var(--ok);transition:width .25s}
+main{max-width:760px;margin:auto;padding:14px 14px 40px}
+h1{font-size:20px;margin:6px 0 2px}.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+h2{font-size:16px;margin:0 0 10px;color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:14px}
+.card.cur{border:2px solid var(--ac)}
+label.f{display:block;font-size:13px;color:var(--mut);margin-bottom:10px}
+input[type=text],input[type=date]{display:block;width:100%;min-width:0;min-height:44px;margin-top:4px;padding:10px;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:9px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:480px){.yn button{min-width:48px;padding:9px 10px}}
+.row{padding:10px 0;border-top:1px solid var(--bd)}.row:first-of-type{border-top:0}
+.rt{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rt span{flex:1;min-width:0}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hd b{font-size:17px}.badge{font-size:12px;font-weight:700;background:var(--ac);color:#fff;border-radius:20px;padding:3px 10px}
+.hd .done{color:var(--ok);font-size:13px;font-weight:600}
+.yn{display:flex;gap:6px}
+.yn button{min-width:54px;padding:9px 12px;font-weight:600;font-size:16px;font-family:inherit;border:1.5px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:9px;cursor:pointer}
+.yn button.s.si{background:var(--okb);border-color:var(--ok);color:var(--ok)}
+.yn button.n.no{background:var(--nob);border-color:var(--no);color:var(--no)}
+.sig{width:100%;height:90px;background:#fff;border:1px solid var(--bd);border-radius:9px;touch-action:none;display:block}
+.lnk{background:none;border:0;color:var(--ac);font:inherit;font-size:13px;padding:6px 0;cursor:pointer}
+.btn{width:100%;padding:15px;font-weight:700;font-size:17px;font-family:inherit;border:0;border-radius:12px;background:var(--ac);color:#fff;cursor:pointer}
+.btn2{width:100%;padding:12px;margin-top:10px;font-weight:600;font-size:16px;font-family:inherit;border:1.5px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);cursor:pointer}
+#msg{margin:10px 0 0;font-size:14px;min-height:20px}.err{color:var(--no)}.okm{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="bar"><div><b id="cnt">0/0</b><span class="pg"><i id="pgi"></i></span><span>completos</span></div></div>
+<main>
+<h1>Lista maestra de verificación de cocina</h1>
+<p class="sub">Código OP-003 · Se diligencia cada hora</p>
+<div class="card">
+ <label class="f">Fecha<input type="date" id="fecha"></label>
+ <label class="f">Supervisor (tu nombre)<input type="text" id="sup" placeholder="Nombre completo" autocomplete="name"></label>
+</div>
+<div id="hours"></div>
+<div id="aud"></div>
+<div class="card"><h2>Firma Supervisor</h2><div id="sig"></div></div>
+<button class="btn" id="gen">Generar PDF</button>
+<div id="msg" role="status"></div>
+<button class="btn2" id="rst">Empezar un formato nuevo</button>
+</main>
+<script>
+(function(){try{
+const HRS=[7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+const AUD=["Recetas estandarizadas","Gramajes correctos","Porcionadores utilizados","Etiquetas visibles","Productos refrigerados","PEPS aplicado","Sin contaminación cruzada","Uniformes correctos","Gorro","Uñas cortas","Sin joyas"];
+const YN=[["m","Lavado de manos"],["l","Mesones limpios"],["b","Basura retirada"]];
+const KEY="op003-v1";
+const lab=h=>(h>12?h-12:h)+":00 "+(h<12?"a. m.":"p. m.");
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const blank=()=>({fecha:today(),sup:"",h:{},a:{},firma:""});
+let S=blank();
+try{const r=localStorage.getItem(KEY);if(r){S=Object.assign(blank(),JSON.parse(r))}}catch(e){}
+let tm;const save=()=>{clearTimeout(tm);tm=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},300)};
+const $=id=>document.getElementById(id);
+function el(t,a,...c){const e=document.createElement(t);for(const k in a||{}){if(k==="class")e.className=a[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),a[k]);else e.setAttribute(k,a[k])}c.flat().forEach(x=>e.append(x));return e}
+const H=h=>S.h[h]=S.h[h]||{n:"",c:"",m:"",l:"",b:"",o:""};
+const hdone=h=>{const r=S.h[h];return !!r&&r.n.trim()!==""&&r.c.trim()!==""&&r.m&&r.l&&r.b};
+const marks={};
+function progress(){const n=HRS.filter(hdone).length+AUD.filter((_,j)=>S.a[j]&&S.a[j].v).length,t=HRS.length+AUD.length;
+ $("cnt").textContent=n+"/"+t;$("pgi").style.width=(100*n/t)+"%";HRS.forEach(h=>{if(marks[h])marks[h].textContent=hdone(h)?"✓ Completa":""})}
+function yn(get,set){const w=el("div",{class:"yn"});const bs=el("button",{type:"button",class:"s"},"Sí"),bn=el("button",{type:"button",class:"n"},"No");
+ const paint=()=>{const v=get();bs.classList.toggle("si",v==="si");bn.classList.toggle("no",v==="no")};
+ bs.onclick=()=>{set(get()==="si"?"":"si");paint();progress();save()};bn.onclick=()=>{set(get()==="no"?"":"no");paint();progress();save()};
+ paint();w.append(bs,bn);return w}
+function pad(cv,get,set){const c=cv.getContext("2d");c.lineWidth=2.2;c.lineCap="round";c.strokeStyle="#111";
+ const img=get();if(img){const im=new Image();im.onload=()=>c.drawImage(im,0,0,cv.width,cv.height);im.src=img}
+ let dr=false;const p=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+ cv.onpointerdown=e=>{dr=true;cv.setPointerCapture(e.pointerId);const[x,y]=p(e);c.beginPath();c.moveTo(x,y);c.lineTo(x+.1,y+.1);c.stroke();e.preventDefault()};
+ cv.onpointermove=e=>{if(!dr)return;const[x,y]=p(e);c.lineTo(x,y);c.stroke()};
+ const end=()=>{if(!dr)return;dr=false;set(cv.toDataURL("image/png"));save()};cv.onpointerup=end;cv.onpointercancel=end;
+ return()=>{c.clearRect(0,0,cv.width,cv.height);set("");save()}}
+function txt(ph,get,set,mode){const i=el("input",{type:"text",placeholder:ph,value:get()});if(mode)i.setAttribute("inputmode",mode);i.oninput=()=>{set(i.value);progress();save()};return i}
+function render(){const root=$("hours");root.textContent="";const now=new Date().getHours();
+ HRS.forEach(h=>{const r=H(h);const cur=h===now&&S.fecha===today();
+  const mk=el("span",{class:"done"});marks[h]=mk;
+  const card=el("div",{class:"card"+(cur?" cur":""),id:"h"+h},
+   el("div",{class:"hd"},el("b",{},lab(h)),cur?el("span",{class:"badge"},"Ahora"):mk));
+  if(cur)card.querySelector(".hd").append(mk);
+  card.append(el("div",{class:"g2"},
+   el("label",{class:"f"},"Temperatura nevera (°C)",txt("°C",()=>r.n,v=>r.n=v)),
+   el("label",{class:"f"},"Congelador (°C)",txt("°C",()=>r.c,v=>r.c=v))));
+  YN.forEach(([k,t])=>card.append(el("div",{class:"row"},el("div",{class:"rt"},el("span",{},t),yn(()=>r[k],v=>r[k]=v)))));
+  card.append(el("div",{style:"margin-top:8px"},txt("Observaciones",()=>r.o,v=>r.o=v)));
+  root.append(card)});
+ const ac=el("div",{class:"card"},el("h2",{},"Auditoría de Producción"));
+ AUD.forEach((t,j)=>{const it=S.a[j]=S.a[j]||{v:"",o:""};
+  ac.append(el("div",{class:"row"},el("div",{class:"rt"},el("span",{},t),yn(()=>it.v,v=>it.v=v)),el("div",{style:"margin-top:8px"},txt("Observaciones",()=>it.o,v=>it.o=v))))});
+ $("aud").textContent="";$("aud").append(ac)}
+$("fecha").value=S.fecha||today();$("fecha").oninput=()=>{S.fecha=$("fecha").value;save()};
+$("sup").value=S.sup||"";$("sup").oninput=()=>{S.sup=$("sup").value;save()};
+$("sig").append(el("div",{},el("div",{class:"sub"},"Firma (dibuja con el dedo o el mouse)"),(()=>{const cv=el("canvas",{class:"sig",width:400,height:140});window.__clr=pad(cv,()=>S.firma,v=>S.firma=v);return cv})(),el("button",{type:"button",class:"lnk",onclick:()=>window.__clr()},"Borrar firma")));
+function build(){
+ const {jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape",unit:"mm",format:"letter"});const M=15,W=279.4,B=198;let y=16;
+ const fd=s=>{if(!s)return"________";const[a,b,c]=s.split("-");return c+"/"+b+"/"+a};
+ const mark=(v,x,yy)=>{d.setFont("helvetica","bold");if(v==="si"){d.setTextColor(31,122,69);d.text("Sí",x,yy)}else if(v==="no"){d.setTextColor(179,38,30);d.text("No",x,yy)}else{d.setTextColor(150);d.text("—",x,yy)}d.setTextColor(0);d.setFont("helvetica","normal")};
+ d.setFont("helvetica","bold");d.setFontSize(14);d.text("LISTA MAESTRA DE VERIFICACIÓN DE COCINA",M,y);y+=6;
+ d.setFont("helvetica","normal");d.setFontSize(9);d.setTextColor(90);d.text("Código: OP-003   ·   Se diligencia cada hora",M,y);y+=8;d.setTextColor(0);d.setFontSize(10.5);
+ [["Fecha",fd(S.fecha)],["Supervisor",S.sup||"________"]].forEach(([a,b])=>{d.setFont("helvetica","bold");d.text(a+": ",M,y);d.setFont("helvetica","normal");d.text(String(b),M+d.getTextWidth(a+": ")+1,y);y+=6});
+ y+=3;
+ const X=[M+2,45,78,112,138,166,194],head=()=>{d.setFillColor(235,230,225);d.rect(M,y-4.5,W-2*M,7,"F");d.setFont("helvetica","bold");d.setFontSize(9.5);["Hora","Nevera (°C)","Congelador (°C)","Lavado manos","Mesones limpios","Basura retirada","Observaciones"].forEach((t,i)=>d.text(t,X[i],y));y+=3};
+ head();
+ HRS.forEach(h=>{const r=S.h[h]||{};const o=d.splitTextToSize(r.o||"",W-M-X[6]-2);const hh=Math.max(1,o.length)*4.6+3.5;
+  if(y+hh>B){d.addPage();y=16;head()}
+  d.setDrawColor(210);d.line(M,y,W-M,y);d.setFontSize(10);d.setFont("helvetica","bold");d.text(lab(h),X[0],y+5);d.setFont("helvetica","normal");
+  d.text(r.n?String(r.n):"—",X[1],y+5);d.text(r.c?String(r.c):"—",X[2],y+5);mark(r.m,X[3],y+5);mark(r.l,X[4],y+5);mark(r.b,X[5],y+5);d.setFontSize(9.5);d.text(o,X[6],y+5);y+=hh});
+ d.line(M,y,W-M,y);y+=10;
+ const ah=()=>{d.setFillColor(235,230,225);d.rect(M,y-4.5,W-2*M,7,"F");d.setFont("helvetica","bold");d.setFontSize(11);d.text("Auditoría de Producción",M+2,y);y+=3};
+ if(y+30>B){d.addPage();y=16}ah();
+ AUD.forEach((t,j)=>{const it=S.a[j]||{};const o=d.splitTextToSize(it.o||"",W-M-150),hh=Math.max(1,o.length)*4.6+3.5;
+  if(y+hh>B){d.addPage();y=16;ah()}
+  d.setDrawColor(210);d.line(M,y,W-M,y);d.setFontSize(10);d.setFont("helvetica","normal");d.text(t,M+2,y+5);mark(it.v,112,y+5);d.setFontSize(9.5);d.text(o,128,y+5);y+=hh});
+ d.line(M,y,W-M,y);y+=10;
+ if(y+40>B){d.addPage();y=16}
+ if(S.firma){try{d.addImage(S.firma,"PNG",M,y,50,17.5)}catch(e){}}y+=19;d.setDrawColor(0);d.line(M,y,M+70,y);y+=5;d.setFontSize(10);d.setFont("helvetica","bold");d.text("Firma Supervisor",M,y);y+=5;d.setFont("helvetica","normal");d.text(S.sup||"",M,y);
+ const now=new Date(),gen=now.toLocaleDateString("es-CO")+" "+now.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"});
+ const np=d.getNumberOfPages();for(let i=1;i<=np;i++){d.setPage(i);d.setFontSize(8);d.setTextColor(110);d.setFont("helvetica","normal");d.text("OP-003 · Elaborado por: "+(S.sup||"—")+" · Generado el "+gen,M,208);d.text("Página "+i+" de "+np,W-M,208,{align:"right"})}
+ return d}
+$("gen").onclick=async()=>{const m=$("msg");m.className="";m.textContent="";
+ if(!S.sup.trim()){m.className="err";m.textContent="Escribe tu nombre en “Supervisor” antes de generar el PDF.";$("sup").focus();return}
+ try{
+  if(!window.jspdf){m.textContent="Preparando PDF…";await new Promise(r=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";s.onload=r;s.onerror=r;document.head.appendChild(s)});m.textContent="";
+   if(!window.jspdf){m.className="err";m.textContent="No se pudo cargar el generador de PDF. Revisa tu conexión e intenta de nuevo.";return}}
+  const buf=build().output("arraybuffer");
+  const nm=S.sup.trim().replace(/[^\p{L}\p{N}]+/gu,"_").replace(/^_|_$/g,"");
+  const file="OP-003_Cocina_"+(S.fecha||today())+"_"+nm+".pdf";
+  const blob=new Blob([buf],{type:"application/pdf"});
+  let dl=null;try{if(typeof claude!=="undefined"&&claude.use)dl=await claude.use("downloads")}catch(e){}
+  if(dl){await dl.save({filename:file,data:buf})}
+  else{const f=new File([blob],file,{type:"application/pdf"});
+   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:file})}catch(e){if(e&&e.name!=="AbortError")throw e}}
+   else{const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=file;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}}
+  const miss=HRS.filter(h=>!hdone(h)).length;
+  m.className="okm";m.textContent="PDF listo: "+file+(miss?" ("+miss+" horas incompletas aparecen con “—”).":"")}
+ catch(e){if(e&&e.code==="declined"){m.textContent="Descarga cancelada."}else{m.className="err";m.textContent="No se pudo generar el PDF."+(e&&e.message?" "+e.message:"")}}};
+let rt;$("rst").onclick=()=>{const b=$("rst");if(!rt){b.textContent="Toca de nuevo para borrar todo";rt=setTimeout(()=>{rt=0;b.textContent="Empezar un formato nuevo"},3500);return}
+ clearTimeout(rt);rt=0;const a=S.sup;S=blank();S.sup=a;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}location.reload()};
+render();progress();
+setTimeout(()=>{const c=document.querySelector(".card.cur");if(c)c.scrollIntoView({block:"start"})},150);
+}catch(err){const b=document.createElement("div");b.style.cssText="padding:12px;margin:12px;border:1px solid #b3261e;color:#b3261e;border-radius:10px;font:14px system-ui";b.textContent="Error al cargar: "+err.message;document.body.prepend(b)}})();
+</script>
+</body>
+</html>
